@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="card chat-card">
+        <div class="card-header">
+            <h2><i class="fas fa-comments me-2"></i>Чат Swagram</h2>
+            <span class="online-status">
+                <i class="fas fa-circle"></i> <span id="online-users">1</span> онлайн
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="messages-container" id="messages">
+                {% for message in messages %}
+                <div class="message {% if message.author.username == current_user.username %}message-own{% else %}message-other{% endif %}">
+                    <div class="message-header">
+                        <span class="message-username">{{ message.author.username }}</span>
+                        <span class="message-time">{{ message.timestamp.strftime('%H:%M') }}</span>
+                    </div>
+                    <div class="message-content">
+                        {{ message.body }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card-footer">
+            <form id="message-form" class="message-form">
+                <div class="input-group">
+                    <input type="text" id="message-input" class="form-control" placeholder="Напишите сообщение..." required>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}
