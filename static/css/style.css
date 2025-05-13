@@ -61,6 +61,45 @@ main {
     color: var(--primary-color);
 }
 
+/* Link Styling */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--secondary-color);
+    text-decoration: none;
+}
+
+/* Card footer links */
+.card-footer a {
+    font-weight: 500;
+}
+
+.card-footer a:hover {
+    color: var(--secondary-color);
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-primary:hover {
+    color: var(--secondary-color) !important;
+}
+
+/* Table links */
+.table a {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.table a:hover {
+    color: var(--secondary-color);
+}
+
 /* Card Styling */
 .card {
     background-color: var(--card-bg);
@@ -114,7 +153,7 @@ main {
 }
 
 .form-control:focus {
-    box-shadow: none;
+    box-shadow: 0 0 0 0.25rem rgba(114, 105, 239, 0.15);
     border-color: var(--accent-color);
 }
 
@@ -146,12 +185,6 @@ main {
     border-color: #05c091;
 }
 
-.alert {
-    border-radius: 8px;
-    padding: 12px 15px;
-    margin-bottom: 20px;
-}
-
 .error-message {
     color: var(--error-color);
     font-size: 0.85rem;
@@ -161,6 +194,17 @@ main {
 
 .flash-messages {
     margin-bottom: 20px;
+}
+
+.alert {
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 /* Chat Styles */
@@ -219,6 +263,7 @@ main {
     gap: 15px;
 }
 
+/* Message styling improvements */
 .message {
     max-width: 75%;
     padding: 12px 16px;
@@ -308,6 +353,98 @@ main {
 
 .message-form .btn i {
     font-size: 1.1rem;
+}
+
+/* Admin Panel Styles */
+.admin-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.admin-container .card {
+    margin-bottom: 30px;
+}
+
+.admin-container .card-header {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.admin-container .table {
+    margin-bottom: 0;
+}
+
+.admin-container .table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.admin-container .badge {
+    padding: 0.35em 0.65em;
+}
+
+.admin-container .nav-tabs {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.admin-container .nav-tabs .nav-link {
+    color: var(--text-secondary);
+    font-weight: 500;
+    border: none;
+    padding: 10px 15px;
+    margin-bottom: -1px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.admin-container .nav-tabs .nav-link.active {
+    color: var(--primary-color);
+    background-color: transparent;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.admin-container .nav-tabs .nav-link:hover:not(.active) {
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.admin-container .nav-tabs .nav-link i {
+    margin-right: 5px;
+}
+
+.admin-container .tab-content {
+    padding: 20px 0;
+}
+
+.admin-container .btn {
+    transition: all 0.2s ease;
+}
+
+.admin-container .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.admin-container .table td, 
+.admin-container .table th {
+    vertical-align: middle;
+}
+
+.admin-container .btn-danger {
+    background-color: var(--error-color);
+    border-color: var(--error-color);
+}
+
+.admin-container .btn-danger:hover {
+    background-color: #e23258;
+    border-color: #e23258;
+}
+
+.admin-container .alert-danger {
+    color: #842029;
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
 }
 
 /* Footer */

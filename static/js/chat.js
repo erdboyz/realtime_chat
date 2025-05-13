@@ -42,6 +42,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        // Handle chat clearing from admin
+        socket.on('clear_chat', function() {
+            // Clear all messages from the container
+            if (messagesContainer) {
+                messagesContainer.innerHTML = '';
+            }
+        });
+
         // Request current user count when connecting
         socket.on('connect', function() {
             // The server will automatically send the user count 
