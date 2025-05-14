@@ -8,8 +8,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const messagesContainer = document.getElementById('messages');
     const onlineUsers = document.getElementById('online-users');
     
-    // Get current username from the navbar
-    const currentUsername = document.querySelector('.nav-link i.fas.fa-user-circle')?.parentElement?.textContent.trim().replace('Привет, ', '').replace('!', '') || '';
+    // Find the username using multiple methods to ensure it works
+    let currentUsername = '';
+    
+    // Method 1: From the avatar alt attribute
+    const navAvatar = document.querySelector('.nav-avatar');
+    if (navAvatar) {
+        currentUsername = navAvatar.alt;
+    }
+    
+    // Method 2: From any existing messages
+    if (!currentUsername && messagesContainer) {
+        const ownMessages = messagesContainer.querySelectorAll('.message-own');
+        if (ownMessages.length > 0) {
+            const usernameElement = ownMessages[0].querySelector('.message-username');
+            if (usernameElement) {
+                currentUsername = usernameElement.textContent.trim();
+            }
+        }
+    }
+    
+    console.log('Current username detected:', currentUsername);
     
     // Проверка на существование элементов (только на странице чата)
     if (messageForm && messageInput && messagesContainer) {
@@ -68,26 +87,48 @@ document.addEventListener('DOMContentLoaded', function() {
         const messageElement = document.createElement('div');
         messageElement.className = `message ${isOwnMessage ? 'message-own' : 'message-other'}`;
         
-        const messageHeader = document.createElement('div');
-        messageHeader.className = 'message-header';
+        // Create avatar element
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'message-avatar';
         
-        const usernameSpan = document.createElement('span');
-        usernameSpan.className = 'message-username';
-        usernameSpan.textContent = data.username;
+        const avatarImg = document.createElement('img');
+        avatarImg.src = `/static/avatars/${data.avatar || 'default_avatar.png'}`;
+        avatarImg.alt = data.username;
         
-        const timeSpan = document.createElement('span');
-        timeSpan.className = 'message-time';
-        timeSpan.textContent = data.display_time || getCurrentTime();
+        avatarDiv.appendChild(avatarImg);
+        messageElement.appendChild(avatarDiv);
         
-        messageHeader.appendChild(usernameSpan);
-        messageHeader.appendChild(timeSpan);
+        // Create message content wrapper
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'message-content-wrapper';
         
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message-content';
-        messageContent.textContent = data.message;
+        // Create the message bubble that contains all message elements
+        const messageBubble = document.createElement('div');
+        messageBubble.className = 'message-bubble';
         
-        messageElement.appendChild(messageHeader);
-        messageElement.appendChild(messageContent);
+        // Add username at the top
+        const usernameDiv = document.createElement('div');
+        usernameDiv.className = 'message-username';
+        usernameDiv.textContent = data.username;
+        messageBubble.appendChild(usernameDiv);
+        
+        // Add message text
+        const messageText = document.createElement('div');
+        messageText.className = 'message-text';
+        messageText.textContent = data.message;
+        messageBubble.appendChild(messageText);
+        
+        // Add timestamp at the bottom
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'message-time';
+        timeDiv.textContent = data.display_time || getCurrentTime();
+        messageBubble.appendChild(timeDiv);
+        
+        // Add the bubble to the content wrapper
+        contentWrapper.appendChild(messageBubble);
+        
+        // Add the content wrapper to the message element
+        messageElement.appendChild(contentWrapper);
         
         messagesContainer.appendChild(messageElement);
     }

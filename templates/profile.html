@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% if show_profile_updated %}
+            <div class="alert alert-success mb-3">
+                <i class="fas fa-check-circle me-2"></i>Ваш профиль был успешно обновлен!
+            </div>
+            {% endif %}
+            
+            <div class="card profile-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-circle me-2"></i>Ваш профиль</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="avatar-container mb-3">
+                                <img src="{{ url_for('static', filename='avatars/' + user.avatar) }}" alt="Аватар пользователя" class="avatar-image img-fluid rounded-circle">
+                            </div>
+                            <a href="{{ url_for('edit_profile') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-edit me-1"></i>Редактировать профиль
+                            </a>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="profile-info">
+                                <div class="mb-3">
+                                    <h5><i class="fas fa-user me-2"></i>Имя пользователя</h5>
+                                    <p class="lead">{{ user.username }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <h5><i class="fas fa-envelope me-2"></i>Email</h5>
+                                    <p class="lead">{{ user.email }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <h5><i class="fas fa-user-shield me-2"></i>Статус</h5>
+                                    <p class="lead">
+                                        {% if user.is_admin %}
+                                        <span class="badge bg-danger">Администратор</span>
+                                        {% else %}
+                                        <span class="badge bg-primary">Пользователь</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

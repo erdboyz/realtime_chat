@@ -44,4 +44,9 @@ logs/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db 
+Thumbs.db
+
+# User uploads
+static/avatars/*
+!static/avatars/.gitkeep
+!static/avatars/default_avatar.png 

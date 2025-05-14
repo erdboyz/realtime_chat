@@ -13,14 +13,21 @@
             <div class="messages-container" id="messages">
                 {% for message in messages %}
                 <div class="message {% if message.author.username == current_user.username %}message-own{% else %}message-other{% endif %}">
-                    <div class="message-header">
-                        <span class="message-username">{{ message.author.username }}</span>
-                        <span class="message-time" data-timestamp="{{ message.timestamp.isoformat() }}">
-                            {{ (message.timestamp.hour + 3) % 24 }}:{{ '%02d'|format(message.timestamp.minute) }}
-                        </span>
+                    <div class="message-avatar">
+                        <img src="{{ url_for('static', filename='avatars/' + message.author.avatar) }}" alt="{{ message.author.username }}">
                     </div>
-                    <div class="message-content">
-                        {{ message.body }}
+                    <div class="message-content-wrapper">
+                        <div class="message-bubble">
+                            <div class="message-username">
+                                {{ message.author.username }}
+                            </div>
+                            <div class="message-text">
+                                {{ message.body }}
+                            </div>
+                            <div class="message-time" data-timestamp="{{ message.timestamp.isoformat() }}">
+                                {{ (message.timestamp.hour + 3) % 24 }}:{{ '%02d'|format(message.timestamp.minute) }}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}

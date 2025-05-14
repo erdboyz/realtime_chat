@@ -1,0 +1,4 @@
+# This file ensures the avatars directory is tracked by Git
+# even when it contains no other files.
+# 
+# Avatars will be stored here when users upload them. 

@@ -257,70 +257,130 @@ a:hover {
 .messages-container {
     height: 100%;
     overflow-y: auto;
-    padding: 20px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
 }
 
-/* Message styling improvements */
+/* Message styling */
 .message {
-    max-width: 75%;
-    padding: 12px 16px;
-    border-radius: 15px;
     position: relative;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    min-width: 180px;
     display: flex;
-    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    max-width: 80%;
 }
 
 .message-other {
-    background-color: var(--light-bg);
     align-self: flex-start;
-    border-bottom-left-radius: 4px;
 }
 
 .message-own {
-    background-color: var(--primary-color);
-    color: white;
     align-self: flex-end;
-    border-bottom-right-radius: 4px;
+    flex-direction: row-reverse;
 }
 
-.message-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    font-size: 0.85rem;
-    min-width: 150px;
+/* Avatar styling */
+.message-avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    align-self: flex-end;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px #eaeaea;
+}
+
+.message-other .message-avatar {
+    margin-right: 6px;
+}
+
+.message-own .message-avatar {
+    margin-left: 6px;
+}
+
+.message-avatar img {
     width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
-.message-own .message-header {
-    color: rgba(255, 255, 255, 0.8);
+/* Message content wrapper */
+.message-content-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: calc(100% - 45px);
 }
 
+/* Message bubble - contains username, text and time */
+.message-bubble {
+    padding: 6px 10px;
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    min-width: 120px;
+    width: fit-content;
+    max-width: 100%;
+}
+
+.message-other .message-bubble {
+    background-color: var(--light-bg);
+    border-bottom-left-radius: 2px;
+    color: var(--text-primary);
+}
+
+.message-own .message-bubble {
+    background-color: var(--primary-color);
+    border-bottom-right-radius: 2px;
+    color: white;
+}
+
+/* Username at the top */
 .message-username {
     font-weight: 600;
-    margin-right: 15px;
+    font-size: 0.8rem;
+    margin-bottom: 1px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 60%;
+    max-width: 100%;
 }
 
-.message-time {
-    opacity: 0.8;
-    white-space: nowrap;
-    margin-left: auto;
+.message-other .message-username {
+    color: #5a5a5a;
 }
 
-.message-content {
+.message-own .message-username {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Message text */
+.message-text {
     word-break: break-word;
-    line-height: 1.5;
-    width: 100%;
-    margin-top: 2px;
+    line-height: 1.2;
+    font-size: 0.92rem;
+    margin-bottom: 2px;
+    padding: 1px 0;
+}
+
+/* Time at the bottom */
+.message-time {
+    font-size: 0.65rem;
+    opacity: 0.7;
+    align-self: flex-end;
+    margin-top: 1px;
+}
+
+.message-other .message-time {
+    color: #8e8e8e;
+}
+
+.message-own .message-time {
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .message:after {
@@ -533,4 +593,109 @@ footer {
     .navbar-brand {
         font-size: 1.3rem;
     }
+}
+
+/* Profile Styles */
+.profile-card, .profile-edit-card {
+    margin-top: 20px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.profile-card .card-header, .profile-edit-card .card-header {
+    background-color: #563d7c;
+    color: white;
+    padding: 15px 20px;
+}
+
+.avatar-container {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: filter 0.2s ease;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    border-radius: 50%;
+}
+
+.avatar-overlay i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.avatar-container:hover .avatar-image {
+    filter: blur(2px);
+}
+
+.avatar-container:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.avatar-drag-over {
+    border: 2px dashed var(--primary-color);
+    box-shadow: 0 0 10px rgba(114, 105, 239, 0.5);
+}
+
+/* Hide the actual file input */
+input[type="file"].d-none {
+    display: none !important;
+}
+
+.profile-info h5 {
+    color: #563d7c;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.profile-info .lead {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+}
+
+/* Navbar Avatar */
+.nav-avatar {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border: 2px solid var(--accent-color);
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.navbar-nav .nav-link {
+    display: flex;
+    align-items: center;
+}
+
+/* When consecutive messages from the same user, reduce spacing */
+.message + .message.message-own, 
+.message + .message.message-other {
+    margin-top: -2px;
 }
