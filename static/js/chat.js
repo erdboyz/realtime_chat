@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const timeSpan = document.createElement('span');
         timeSpan.className = 'message-time';
-        timeSpan.textContent = data.timestamp;
+        timeSpan.textContent = data.display_time || getCurrentTime();
         
         messageHeader.appendChild(usernameSpan);
         messageHeader.appendChild(timeSpan);
@@ -90,6 +90,14 @@ document.addEventListener('DOMContentLoaded', function() {
         messageElement.appendChild(messageContent);
         
         messagesContainer.appendChild(messageElement);
+    }
+    
+    // Get current time in HH:MM format as fallback
+    function getCurrentTime() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
     }
     
     // Прокрутка до последнего сообщения

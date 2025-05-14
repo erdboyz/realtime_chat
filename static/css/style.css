@@ -447,6 +447,51 @@ a:hover {
     border-color: #f5c2c7;
 }
 
+/* Admin Panel Styles - Button Size Fixes */
+.admin-container .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.admin-container table td {
+    padding: 0.6rem 0.75rem;
+}
+
+.admin-container .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+/* Make buttons inside table smaller and aligned */
+.admin-container table .btn {
+    min-width: 90px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.admin-container table .btn i {
+    font-size: 0.85rem;
+}
+
+/* Fix spacing for protected status button */
+.admin-container table .btn-secondary i {
+    margin-right: 2px;
+}
+
+/* Improve badge alignment */
+.admin-container .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
 /* Footer */
 footer {
     background-color: var(--card-bg);

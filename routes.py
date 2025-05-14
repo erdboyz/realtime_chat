@@ -4,9 +4,13 @@ from models import User, Message, db
 from forms import LoginForm, RegistrationForm
 from flask_socketio import emit
 from functools import wraps
+from datetime import datetime, timezone, timedelta
 
 # Track connected users by their user IDs and session IDs
 connected_users = {}  # Maps session ID to user ID
+
+# Define the time zone offset to apply (MSK is UTC+3)
+TIMEZONE_OFFSET = 3  # hours
 
 def admin_required(f):
     @wraps(f)
@@ -153,12 +157,20 @@ def configure_routes(app, socketio):
     @socketio.on('send_message')
     def handle_message(data):
         if current_user.is_authenticated:
-            message = Message(body=data['message'], author=current_user)
+            # Create message with current time
+            now = datetime.now(timezone.utc)
+            message = Message(body=data['message'], author=current_user, timestamp=now)
             db.session.add(message)
             db.session.commit()
             
+            # Calculate time with offset
+            adjusted_hour = (now.hour + TIMEZONE_OFFSET) % 24
+            formatted_time = f"{adjusted_hour:02d}:{now.minute:02d}"
+            
+            # Send formatted time
             emit('receive_message', {
                 'message': message.body,
                 'username': current_user.username,
-                'timestamp': message.timestamp.strftime('%H:%M')
+                'display_time': formatted_time,
+                'timestamp': message.timestamp.isoformat()
             }, broadcast=True)

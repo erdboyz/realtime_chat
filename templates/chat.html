@@ -15,7 +15,9 @@
                 <div class="message {% if message.author.username == current_user.username %}message-own{% else %}message-other{% endif %}">
                     <div class="message-header">
                         <span class="message-username">{{ message.author.username }}</span>
-                        <span class="message-time">{{ message.timestamp.strftime('%H:%M') }}</span>
+                        <span class="message-time" data-timestamp="{{ message.timestamp.isoformat() }}">
+                            {{ (message.timestamp.hour + 3) % 24 }}:{{ '%02d'|format(message.timestamp.minute) }}
+                        </span>
                     </div>
                     <div class="message-content">
                         {{ message.body }}
