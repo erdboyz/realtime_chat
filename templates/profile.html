@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-12 col-md-10 col-lg-8">
             {% if show_profile_updated %}
             <div class="alert alert-success mb-3">
                 <i class="fas fa-check-circle me-2"></i>Ваш профиль был успешно обновлен!
@@ -12,30 +12,30 @@
             
             <div class="card profile-card">
                 <div class="card-header">
-                    <h2><i class="fas fa-user-circle me-2"></i>Ваш профиль</h2>
+                    <h2 class="fs-4"><i class="fas fa-user-circle me-2"></i>Ваш профиль</h2>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4 text-center mb-md-0">
+                        <div class="col-sm-10 col-md-4 text-center mx-auto mb-4 mb-md-0">
                             <div class="avatar-container mb-3">
                                 <img src="{{ url_for('static', filename='avatars/' + user.avatar) }}" alt="Аватар пользователя" class="avatar-image img-fluid rounded-circle">
                             </div>
-                            <a href="{{ url_for('edit_profile') }}" class="btn btn-primary btn-sm">
+                            <a href="{{ url_for('edit_profile') }}" class="btn btn-primary btn-sm w-100 w-sm-auto">
                                 <i class="fas fa-edit me-1"></i>Редактировать профиль
                             </a>
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-12 col-md-8">
                             <div class="profile-info">
                                 <div class="mb-3">
-                                    <h5><i class="fas fa-user me-2"></i>Имя пользователя</h5>
-                                    <p class="lead">{{ user.username }}</p>
+                                    <h5 class="fs-6"><i class="fas fa-user me-2"></i>Имя пользователя</h5>
+                                    <p class="lead fs-5">{{ user.username }}</p>
                                 </div>
                                 <div class="mb-3">
-                                    <h5><i class="fas fa-envelope me-2"></i>Email</h5>
-                                    <p class="lead">{{ user.email }}</p>
+                                    <h5 class="fs-6"><i class="fas fa-envelope me-2"></i>Email</h5>
+                                    <p class="lead fs-5">{{ user.email }}</p>
                                 </div>
                                 <div class="mb-3">
-                                    <h5><i class="fas fa-user-shield me-2"></i>Статус</h5>
+                                    <h5 class="fs-6"><i class="fas fa-user-shield me-2"></i>Статус</h5>
                                     <p class="lead">
                                         {% if user.is_admin %}
                                         <span class="badge bg-danger">Администратор</span>

@@ -1065,3 +1065,71 @@ input[type="file"].d-none {
     color: var(--text-secondary);
     text-align: right;
 }
+
+/* Additional responsive styles for profile pages */
+@media (max-width: 991.98px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .card {
+        border-radius: 8px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .profile-card .card-body, 
+    .profile-edit-card .card-body {
+        padding: 15px;
+    }
+    
+    .profile-info h5 {
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-info .lead {
+        margin-bottom: 1rem;
+    }
+    
+    .card-header h2 {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .profile-card .card-footer,
+    .profile-edit-card .card-footer {
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .profile-card .avatar-container, 
+    .profile-edit-card .avatar-container {
+        width: 120px;
+        height: 120px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .form-control {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+    
+    /* Create a utility class for button width control */
+    .w-sm-auto {
+        width: 100%;
+    }
+    
+    @media (min-width: 576px) {
+        .w-sm-auto {
+            width: auto !important;
+        }
+    }
+}

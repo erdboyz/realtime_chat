@@ -86,10 +86,6 @@ A real-time messaging web application developed using the Flask framework. This 
 - **Real-time communication**: Socket.IO
 - **Image processing**: Pillow
 
-### Screenshots
-
-(Add screenshots of your application here)
-
 ### License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
@@ -179,10 +175,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **База данных**: SQLite (разработка), PostgreSQL (готово к продакшн)
 - **Коммуникация в реальном времени**: Socket.IO
 - **Обработка изображений**: Pillow
-
-### Скриншоты
-
-(Добавьте скриншоты вашего приложения здесь)
 
 ### Лицензия
 
