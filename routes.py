@@ -1,14 +1,15 @@
 from flask import render_template, flash, redirect, url_for, request, jsonify, abort, current_app, session
 from flask_login import current_user, login_user, logout_user, login_required
-from models import User, Message, db
+from models import User, Message, PrivateMessage, db
 from forms import LoginForm, RegistrationForm, ProfileForm
-from flask_socketio import emit
+from flask_socketio import emit, join_room
 from functools import wraps
 from datetime import datetime, timezone, timedelta
 import os
 import secrets
 from PIL import Image
 from werkzeug.utils import secure_filename
+from sqlalchemy import or_, and_, desc
 
 # Track connected users by their user IDs and session IDs
 connected_users = {}  # Maps session ID to user ID
@@ -129,6 +130,118 @@ def configure_routes(app, socketio):
         messages = Message.query.order_by(Message.timestamp.asc()).all()
         return render_template('chat.html', title='Чат', messages=messages)
     
+    @app.route('/user/<username>')
+    @login_required
+    def view_user_profile(username):
+        user = User.query.filter_by(username=username).first_or_404()
+        return render_template('user_profile.html', title=f'Профиль {user.username}', user=user)
+    
+    @app.route('/conversations')
+    @login_required
+    def conversations():
+        # Find all unique users that the current user has exchanged messages with
+        sent_to_users = db.session.query(User).join(PrivateMessage, User.id == PrivateMessage.recipient_id)\
+            .filter(PrivateMessage.sender_id == current_user.id).all()
+        
+        received_from_users = db.session.query(User).join(PrivateMessage, User.id == PrivateMessage.sender_id)\
+            .filter(PrivateMessage.recipient_id == current_user.id).all()
+        
+        # Combine and deduplicate users
+        conversation_users = list(set(sent_to_users + received_from_users))
+        
+        conversations = []
+        
+        # For each user, get last message and unread count
+        for user in conversation_users:
+            # Find the last message between current user and this user
+            last_message = PrivateMessage.query.filter(
+                or_(
+                    and_(PrivateMessage.sender_id == current_user.id, PrivateMessage.recipient_id == user.id),
+                    and_(PrivateMessage.sender_id == user.id, PrivateMessage.recipient_id == current_user.id)
+                )
+            ).order_by(desc(PrivateMessage.timestamp)).first()
+            
+            # Count unread messages from this user
+            unread_count = PrivateMessage.query.filter(
+                PrivateMessage.sender_id == user.id,
+                PrivateMessage.recipient_id == current_user.id,
+                PrivateMessage.is_read == False
+            ).count()
+            
+            if last_message:
+                # Format time
+                now = datetime.now(timezone.utc)
+                message_time = last_message.timestamp
+                
+                # If today, show time HH:MM
+                if message_time.date() == now.date():
+                    adjusted_hour = (message_time.hour + TIMEZONE_OFFSET) % 24
+                    time_str = f"{adjusted_hour:02d}:{message_time.minute:02d}"
+                else:
+                    # If within a week, show day name
+                    days_diff = (now.date() - message_time.date()).days
+                    if days_diff < 7:
+                        weekday_names = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+                        time_str = weekday_names[message_time.weekday()]
+                    else:
+                        # Otherwise show date DD.MM
+                        time_str = f"{message_time.day:02d}.{message_time.month:02d}"
+                
+                # Create conversation data
+                conversations.append({
+                    'user': user,
+                    'last_message': last_message.body[:30] + ('...' if len(last_message.body) > 30 else ''),
+                    'time': time_str,
+                    'unread_count': unread_count
+                })
+        
+        # Sort conversations: first by unread (unread first), then by timestamp (newest first)
+        conversations.sort(key=lambda x: (-x['unread_count'], x['time']), reverse=True)
+        
+        return render_template('conversations.html', title='Личные сообщения', conversations=conversations)
+    
+    @app.route('/messages/<username>')
+    @login_required
+    def private_messages(username):
+        # Get the other user
+        other_user = User.query.filter_by(username=username).first_or_404()
+        
+        # Can't message yourself
+        if other_user.id == current_user.id:
+            flash('Вы не можете отправлять сообщения самому себе', 'warning')
+            return redirect(url_for('conversations'))
+        
+        # Get all messages between the current user and the other user
+        messages = PrivateMessage.query.filter(
+            or_(
+                and_(PrivateMessage.sender_id == current_user.id, PrivateMessage.recipient_id == other_user.id),
+                and_(PrivateMessage.sender_id == other_user.id, PrivateMessage.recipient_id == current_user.id)
+            )
+        ).order_by(PrivateMessage.timestamp).all()
+        
+        # Mark all messages from the other user as read
+        unread_messages = PrivateMessage.query.filter(
+            PrivateMessage.sender_id == other_user.id,
+            PrivateMessage.recipient_id == current_user.id,
+            PrivateMessage.is_read == False
+        ).all()
+        
+        message_ids = []
+        for message in unread_messages:
+            message.is_read = True
+            message_ids.append(message.id)
+        
+        db.session.commit()
+        
+        # Notify the sender that their messages have been read
+        if message_ids:
+            socketio.emit('message_read_status', {
+                'message_ids': message_ids
+            }, room=f"user_{other_user.id}")
+        
+        return render_template('private_messages.html', title=f'Сообщения с {other_user.username}', 
+                              messages=messages, other_user=other_user)
+    
     @app.route('/admin')
     @login_required
     @admin_required
@@ -179,22 +292,35 @@ def configure_routes(app, socketio):
     @socketio.on('connect')
     def handle_connect():
         if current_user.is_authenticated:
-            # Add user with their session ID
+            # Add user to their own room for private messaging
+            join_room(f"user_{current_user.id}")
+            
+            # Add user with their session ID for user count
             connected_users[request.sid] = current_user.id
             
             # Count distinct users (not connections)
             distinct_users = set(connected_users.values())
             emit('user_count', {'count': len(distinct_users)}, broadcast=True)
+            
+            # Broadcast user online status to everyone
+            emit('user_connected', {'user_id': current_user.id}, broadcast=True)
     
     @socketio.on('disconnect')
     def handle_disconnect():
         if request.sid in connected_users:
+            user_id = connected_users[request.sid]
+            
             # Remove this connection
             del connected_users[request.sid]
             
             # Count distinct users (not connections)
             distinct_users = set(connected_users.values())
             emit('user_count', {'count': len(distinct_users)}, broadcast=True)
+            
+            # Check if user has completely gone offline (no more sessions)
+            if user_id not in connected_users.values():
+                # Broadcast user offline status to everyone
+                emit('user_disconnected', {'user_id': user_id}, broadcast=True)
     
     @socketio.on('send_message')
     def handle_message(data):
@@ -217,6 +343,69 @@ def configure_routes(app, socketio):
                 'timestamp': message.timestamp.isoformat(),
                 'avatar': current_user.avatar
             }, broadcast=True)
+    
+    @socketio.on('send_private_message')
+    def handle_private_message(data):
+        if current_user.is_authenticated and 'message' in data and 'recipient_id' in data:
+            recipient_id = int(data['recipient_id'])
+            recipient = User.query.get(recipient_id)
+            
+            if not recipient:
+                return
+            
+            # Create and save the message
+            now = datetime.now(timezone.utc)
+            message = PrivateMessage(
+                body=data['message'],
+                sender_id=current_user.id,
+                recipient_id=recipient_id,
+                timestamp=now,
+                is_read=False
+            )
+            
+            db.session.add(message)
+            db.session.commit()
+            
+            # Format time for display
+            adjusted_hour = (now.hour + TIMEZONE_OFFSET) % 24
+            formatted_time = f"{adjusted_hour:02d}:{now.minute:02d}"
+            
+            # Prepare message data
+            message_data = {
+                'message_id': message.id,
+                'message': message.body,
+                'sender_id': current_user.id,
+                'recipient_id': recipient_id,
+                'display_time': formatted_time,
+                'timestamp': message.timestamp.isoformat(),
+                'avatar': current_user.avatar,
+                'username': current_user.username,
+                'is_read': False
+            }
+            
+            # Emit to sender and recipient
+            emit('receive_private_message', message_data, room=request.sid)
+            emit('receive_private_message', message_data, room=f"user_{recipient_id}")
+    
+    @socketio.on('mark_message_read')
+    def handle_mark_message_read(data):
+        if current_user.is_authenticated and 'message_id' in data:
+            message = PrivateMessage.query.get(int(data['message_id']))
+            
+            if message and message.recipient_id == current_user.id:
+                message.is_read = True
+                db.session.commit()
+                
+                # Notify the sender that their message has been read
+                emit('message_read_status', {
+                    'message_ids': [message.id]
+                }, room=f"user_{message.sender_id}")
+    
+    @socketio.on('request_online_users')
+    def handle_request_online_users():
+        # Get all distinct user IDs that are currently connected
+        online_user_ids = list(set(connected_users.values()))
+        emit('online_users', {'user_ids': online_user_ids})
     
     @app.route('/profile')
     @login_required

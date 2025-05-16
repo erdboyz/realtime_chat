@@ -35,6 +35,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Прокрутка чата вниз при загрузке
         scrollToBottom();
         
+        // Make existing usernames clickable
+        makeUsernamesClickable();
+        
         // Обработка отправки сообщения
         messageForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -51,7 +54,10 @@ document.addEventListener('DOMContentLoaded', function() {
         socket.on('receive_message', function(data) {
             addMessage(data);
             // Ensure scrolling happens after DOM update
-            setTimeout(scrollToBottom, 0);
+            setTimeout(function() {
+                scrollToBottom();
+                makeUsernamesClickable();
+            }, 0);
         });
         
         // Отслеживание подключенных пользователей
@@ -110,6 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const usernameDiv = document.createElement('div');
         usernameDiv.className = 'message-username';
         usernameDiv.textContent = data.username;
+        usernameDiv.setAttribute('data-username', data.username);
         messageBubble.appendChild(usernameDiv);
         
         // Add message text
@@ -148,5 +155,34 @@ document.addEventListener('DOMContentLoaded', function() {
             void messagesContainer.offsetHeight;
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+    }
+    
+    // Make usernames clickable to view profiles
+    function makeUsernamesClickable() {
+        const usernameElements = document.querySelectorAll('.message-username');
+        
+        usernameElements.forEach(element => {
+            // Skip if already processed
+            if (element.getAttribute('data-processed') === 'true') {
+                return;
+            }
+            
+            const username = element.textContent.trim();
+            
+            // Skip making own username clickable
+            if (username === currentUsername) {
+                element.classList.add('message-username-own');
+                element.setAttribute('data-processed', 'true');
+                return;
+            }
+            
+            element.classList.add('message-username-clickable');
+            element.setAttribute('data-processed', 'true');
+            
+            element.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = `/user/${username}`;
+            });
+        });
     }
 });

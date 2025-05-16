@@ -23,7 +23,7 @@
                         {{ form.hidden_tag() }}
                         
                         <div class="row mb-4">
-                            <div class="col-md-4 text-center">
+                            <div class="col-md-4 text-center mb-md-0">
                                 <div class="avatar-container mb-3" id="avatar-preview-container">
                                     <img src="{{ url_for('static', filename='avatars/' + current_user.avatar) }}" alt="Аватар пользователя" class="avatar-image img-fluid rounded-circle" id="avatar-preview">
                                     <div class="avatar-overlay" id="avatar-drag-area">

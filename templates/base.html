@@ -40,6 +40,14 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('chat') }}"><i class="fas fa-comments me-1"></i> Чат</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('conversations') }}">
+                                <i class="fas fa-envelope me-1"></i> Сообщения
+                                {% if unread_count %}
+                                <span class="badge rounded-pill bg-danger ms-1">{{ unread_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
                         {% if current_user.is_admin %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('admin') }}"><i class="fas fa-shield-alt me-1"></i> Админ-панель</a>
@@ -68,6 +76,32 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
+    
+    {% if current_user.is_authenticated %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const messagesNavLink = document.querySelector('.nav-link[href*="conversations"]');
+            const currentUserId = "{{ current_user.id }}";
+            
+            if (messagesNavLink) {
+                // Connect to socket.io if not on the private messages page
+                if (!document.getElementById('private-messages')) {
+                    const socket = io();
+                    
+                    // Listen for private messages to show notifications
+                    socket.on('receive_private_message', function(data) {
+                        // Only show notification for incoming messages
+                        if (data.recipient_id == currentUserId) {
+                            messagesNavLink.classList.add('has-new-messages');
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+    {% endif %}
+    
     {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card chat-card private-chat-card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <h2>
+                            <i class="fas fa-paper-plane me-2"></i>Личные сообщения
+                        </h2>
+                        <div class="chat-with-user">
+                            <div id="other-user-avatar-container" class="chat-user-avatar-container" data-user-id="{{ other_user.id }}">
+                                <img src="{{ url_for('static', filename='avatars/' + other_user.avatar) }}" alt="{{ other_user.username }}" class="chat-user-avatar rounded-circle">
+                            </div>
+                            <span>{{ other_user.username }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="messages-container" id="private-messages">
+                        {% for message in messages %}
+                        <div class="message {% if message.sender_id == current_user.id %}message-own{% else %}message-other{% endif %}" {% if message.id %}data-message-id="{{ message.id }}"{% endif %}>
+                            <div class="message-avatar">
+                                <img src="{{ url_for('static', filename='avatars/' + (current_user.avatar if message.sender_id == current_user.id else other_user.avatar)) }}" 
+                                     alt="{{ current_user.username if message.sender_id == current_user.id else other_user.username }}">
+                            </div>
+                            <div class="message-content-wrapper">
+                                <div class="message-bubble">
+                                    <div class="message-text">
+                                        {{ message.body }}
+                                    </div>
+                                    <div class="message-footer">
+                                        <div class="message-time" data-timestamp="{{ message.timestamp.isoformat() }}">
+                                            {{ (message.timestamp.hour + 3) % 24 }}:{{ '%02d'|format(message.timestamp.minute) }}
+                                        </div>
+                                        {% if message.sender_id == current_user.id %}
+                                        <div class="message-status {% if message.is_read %}message-status-read{% else %}message-status-delivered{% endif %}">
+                                            {% if message.is_read %}
+                                            <i class="fas fa-check"></i><i class="fas fa-check"></i>
+                                            {% else %}
+                                            <i class="fas fa-check"></i>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <form id="private-message-form" class="message-form">
+                        <input type="hidden" id="recipient-id" value="{{ other_user.id }}">
+                        <div class="input-group">
+                            <input type="text" id="private-message-input" class="form-control" placeholder="Напишите сообщение..." required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center mt-3">
+                <a href="{{ url_for('view_user_profile', username=other_user.username) }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Назад к профилю
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/private_chat.js') }}"></script>
+{% endblock %} 

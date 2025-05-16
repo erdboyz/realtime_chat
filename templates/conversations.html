@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card profile-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-inbox me-2"></i>Личные сообщения</h2>
+                </div>
+                <div class="card-body p-0">
+                    {% if conversations %}
+                    <ul class="conversations-list" id="conversations-list">
+                        {% for conv in conversations %}
+                        <li class="conversation-item {% if conv.unread_count > 0 %}unread{% endif %}">
+                            <a href="{{ url_for('private_messages', username=conv.user.username) }}" class="d-flex align-items-center w-100 text-decoration-none">
+                                <img src="{{ url_for('static', filename='avatars/' + conv.user.avatar) }}" alt="{{ conv.user.username }}" class="conversation-avatar">
+                                <div class="conversation-info">
+                                    <div class="conversation-name">
+                                        <span class="d-flex align-items-center">
+                                            <span class="user-status-indicator" data-user-id="{{ conv.user.id }}"></span>
+                                            {{ conv.user.username }}
+                                        </span>
+                                        {% if conv.unread_count > 0 %}
+                                        <span class="badge rounded-pill bg-primary ms-2">{{ conv.unread_count }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="conversation-preview">
+                                        {{ conv.last_message }}
+                                    </div>
+                                </div>
+                                <div class="conversation-time">
+                                    {{ conv.time }}
+                                </div>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="text-center p-4">
+                        <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+                        <p>У вас пока нет личных сообщений.</p>
+                        <p class="text-muted">Перейдите в профиль пользователя, чтобы начать общение.</p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('chat') }}" class="btn btn-primary">
+                        <i class="fas fa-comments me-1"></i>Вернуться в чат
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/conversations.js') }}"></script>
+{% endblock %} 

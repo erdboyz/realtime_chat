@@ -13,6 +13,8 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     avatar = db.Column(db.String(200), default='default_avatar.png')
     messages = db.relationship('Message', backref='author', lazy='dynamic')
+    sent_messages = db.relationship('PrivateMessage', foreign_keys='PrivateMessage.sender_id', backref='sender', lazy='dynamic')
+    received_messages = db.relationship('PrivateMessage', foreign_keys='PrivateMessage.recipient_id', backref='recipient', lazy='dynamic')
 
     def __repr__(self):
         return f'<Пользователь {self.username}>'
@@ -31,3 +33,14 @@ class Message(db.Model):
 
     def __repr__(self):
         return f'<Сообщение {self.body}>'
+
+class PrivateMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.String(500))
+    timestamp = db.Column(db.DateTime, index=True, default=lambda: datetime.now(timezone.utc))
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    is_read = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return f'<PrivateMessage {self.body}>'

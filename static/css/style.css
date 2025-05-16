@@ -371,8 +371,7 @@ a:hover {
 .message-time {
     font-size: 0.65rem;
     opacity: 0.7;
-    align-self: flex-end;
-    margin-top: 1px;
+    text-align: right;
 }
 
 .message-other .message-time {
@@ -381,6 +380,115 @@ a:hover {
 
 .message-own .message-time {
     color: rgba(255, 255, 255, 0.7);
+}
+
+/* Message footer with time and status */
+.message-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.message-status {
+    display: flex;
+    justify-content: flex-end;
+    font-size: 0.7rem;
+    color: #949494;
+    margin-top: 0;
+    position: relative;
+    top: -3px;
+}
+
+.message-own .message-status {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.message-status-delivered i, 
+.message-status-read i {
+    margin-left: 1px;
+}
+
+.message-status-read i:last-child {
+    margin-left: -4px;
+}
+
+/* Online status indicators */
+.user-status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.user-status-online {
+    background-color: var(--success-color);
+}
+
+.user-status-offline {
+    background-color: #adb5bd;
+}
+
+/* Chat with user styling with online status */
+.chat-with-user {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--text-primary);
+    background-color: rgba(114, 105, 239, 0.1);
+    padding: 5px 10px;
+    border-radius: 20px;
+}
+
+.chat-user-avatar {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border: 2px solid white;
+}
+
+.chat-user-avatar-container {
+    position: relative;
+    margin-right: 8px;
+}
+
+.chat-user-avatar-container.online::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    background-color: rgba(6, 214, 160, 0.2);
+    border: 2px solid var(--success-color);
+}
+
+/* Conversation list online indicator */
+.conversation-avatar-container {
+    position: relative;
+    margin-right: 12px;
+}
+
+.conversation-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.conversation-avatar-container.online::after {
+    content: '';
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--success-color);
+    border: 2px solid white;
 }
 
 .message:after {
@@ -679,6 +787,95 @@ input[type="file"].d-none {
     margin-bottom: 16px;
 }
 
+/* Improved responsive profile styles */
+@media (max-width: 767.98px) {
+    .avatar-container {
+        width: 120px;
+        height: 120px;
+        margin-bottom: 20px;
+    }
+    
+    .profile-info {
+        margin-top: 15px;
+    }
+    
+    .profile-card .card-body, 
+    .profile-edit-card .card-body {
+        padding: 15px;
+    }
+    
+    .profile-card .row,
+    .profile-edit-card .row {
+        flex-direction: column;
+    }
+    
+    .profile-card .col-md-4,
+    .profile-edit-card .col-md-4 {
+        margin-bottom: 20px;
+    }
+    
+    .profile-info .lead {
+        font-size: 1rem;
+        word-break: break-word;
+    }
+    
+    /* Fix spacing in edit profile form on mobile */
+    .profile-edit-card label.btn {
+        margin-bottom: 10px;
+        display: block;
+        width: 100%;
+    }
+    
+    .profile-edit-card small.form-text {
+        margin-bottom: 15px;
+        display: block;
+    }
+    
+    .form-control {
+        margin-bottom: 10px;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 575.98px) {
+    .avatar-container {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .avatar-overlay i {
+        font-size: 1.2rem;
+        margin-bottom: 3px;
+    }
+    
+    .avatar-overlay span {
+        font-size: 0.8rem;
+    }
+    
+    .profile-card .card-header h2,
+    .profile-edit-card .card-header h2 {
+        font-size: 1.1rem;
+    }
+    
+    .profile-info h5 {
+        font-size: 1rem;
+    }
+    
+    .profile-info .lead {
+        font-size: 0.9rem;
+    }
+    
+    .profile-edit-card .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .profile-edit-card .d-flex.justify-content-between a,
+    .profile-edit-card .d-flex.justify-content-between input[type="submit"] {
+        width: 100%;
+    }
+}
+
 /* Navbar Avatar */
 .nav-avatar {
     width: 30px;
@@ -698,4 +895,173 @@ input[type="file"].d-none {
 .message + .message.message-own, 
 .message + .message.message-other {
     margin-top: -2px;
+}
+
+/* Clickable usernames in chat */
+.message-username-clickable {
+    cursor: pointer;
+    color: var(--primary-color);
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.message-username-clickable:hover {
+    text-decoration: underline;
+    color: var(--accent-color);
+}
+
+.message-username-own {
+    font-weight: 600;
+    color: var(--success-color);
+}
+
+/* Private messaging styles */
+.private-chat-card {
+    margin-top: 20px;
+    height: calc(100vh - 220px);
+    display: flex;
+    flex-direction: column;
+}
+
+.private-chat-card .card-header {
+    flex-shrink: 0;
+}
+
+.private-chat-card .card-body {
+    flex: 1;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.private-chat-card .card-footer {
+    flex-shrink: 0;
+}
+
+.chat-with-user {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--text-primary);
+    background-color: rgba(114, 105, 239, 0.1);
+    padding: 5px 10px;
+    border-radius: 20px;
+}
+
+.chat-user-avatar {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border: 2px solid white;
+}
+
+.message-status {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+    font-size: 0.7rem;
+    color: #949494;
+}
+
+.message-own .message-status {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.message-status-delivered i, 
+.message-status-read i {
+    margin-left: 1px;
+}
+
+.message-status-read i:last-child {
+    margin-left: -4px;
+}
+
+/* Notification animation for Message tab */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.nav-link.has-new-messages i {
+    animation: pulse 1s infinite;
+    color: var(--primary-color);
+}
+
+/* Base styles for notification badges */
+.notification-badge {
+    position: relative;
+}
+
+.notification-badge[data-count]:after {
+    content: attr(data-count);
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--error-color);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    min-width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    padding: 0 2px;
+    font-weight: bold;
+}
+
+/* Message list for conversations */
+.conversations-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.conversation-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s;
+}
+
+.conversation-item:hover {
+    background-color: rgba(114, 105, 239, 0.05);
+}
+
+.conversation-item.unread {
+    background-color: rgba(114, 105, 239, 0.1);
+}
+
+.conversation-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.conversation-info {
+    flex: 1;
+}
+
+.conversation-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+}
+
+.conversation-preview {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.conversation-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: right;
 }
