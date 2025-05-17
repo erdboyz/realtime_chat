@@ -1211,3 +1211,115 @@ input[type="file"].d-none {
         }
     }
 }
+
+/* Error pages */
+.error-container {
+    padding: 40px 0;
+}
+
+.error-card {
+    border-radius: 15px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    padding: 40px 20px;
+}
+
+.error-card i {
+    color: var(--error-color);
+}
+
+.error-card .display-4 {
+    font-weight: 700;
+    color: var(--error-color);
+}
+
+/* Share Button Styles */
+.share-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #f2f3f5;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.share-btn:hover {
+    background-color: #e4e6e9;
+    color: var(--text-primary);
+}
+
+.share-btn i {
+    font-size: 1rem;
+}
+
+.share-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.share-popup.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.share-popup-content {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 90%;
+    width: 400px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.share-popup-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.share-popup-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.share-popup input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.share-popup-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.share-popup-actions button {
+    flex: 1;
+}

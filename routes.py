@@ -28,6 +28,20 @@ def admin_required(f):
 
 def configure_routes(app, socketio):
     
+    # Error handlers
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return render_template('404.html', title="Страница не найдена"), 404
+    
+    @app.errorhandler(500)
+    def internal_error(error):
+        db.session.rollback()
+        return render_template('500.html', title="Ошибка сервера"), 500
+    
+    @app.errorhandler(403)
+    def forbidden_error(error):
+        return render_template('403.html', title="Доступ запрещен"), 403
+    
     # Helper function to save avatar files
     def save_avatar(form_avatar):
         random_hex = secrets.token_hex(8)
@@ -131,7 +145,6 @@ def configure_routes(app, socketio):
         return render_template('chat.html', title='Чат', messages=messages)
     
     @app.route('/user/<username>')
-    @login_required
     def view_user_profile(username):
         user = User.query.filter_by(username=username).first_or_404()
         return render_template('user_profile.html', title=f'Профиль {user.username}', user=user)

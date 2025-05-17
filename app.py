@@ -19,6 +19,11 @@ login_manager.login_message = 'Пожалуйста, войдите, чтобы 
 def load_user(id):
     return User.query.get(int(id))
 
+# Make current_user available in templates even when not authenticated
+@app.context_processor
+def inject_user():
+    return {'current_user': current_user}
+
 @app.context_processor
 def inject_unread_messages():
     if current_user.is_authenticated:

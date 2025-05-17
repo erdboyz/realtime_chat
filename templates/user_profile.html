@@ -14,6 +14,9 @@
                             <div class="avatar-container mb-3">
                                 <img src="{{ url_for('static', filename='avatars/' + user.avatar) }}" alt="Аватар пользователя" class="avatar-image img-fluid rounded-circle">
                             </div>
+                            <button id="shareProfileBtn" class="share-btn w-100 mb-2">
+                                <i class="fas fa-share-alt"></i>Поделиться профилем
+                            </button>
                         </div>
                         <div class="col-12 col-md-8">
                             <div class="profile-info">
@@ -31,7 +34,7 @@
                                         {% endif %}
                                     </p>
                                 </div>
-                                {% if current_user.is_admin %}
+                                {% if current_user.is_authenticated and current_user.is_admin %}
                                 <div class="mb-3">
                                     <h5 class="fs-6"><i class="fas fa-envelope me-2"></i>Email</h5>
                                     <p class="lead fs-5">{{ user.email }}</p>
@@ -43,13 +46,19 @@
                 </div>
                 <div class="card-footer text-center text-md-start">
                     <div class="d-flex flex-column flex-sm-row flex-wrap gap-2">
-                        <a href="{{ url_for('chat') }}" class="btn btn-secondary w-100 w-sm-auto">
-                            <i class="fas fa-comments me-1"></i>Вернуться в чат
-                        </a>
-                        {% if user.id != current_user.id %}
-                        <a href="{{ url_for('private_messages', username=user.username) }}" class="btn btn-primary w-100 w-sm-auto">
-                            <i class="fas fa-paper-plane me-1"></i>Личное сообщение
-                        </a>
+                        {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('chat') }}" class="btn btn-secondary w-100 w-sm-auto">
+                                <i class="fas fa-comments me-1"></i>Вернуться в чат
+                            </a>
+                            {% if user.id != current_user.id %}
+                            <a href="{{ url_for('private_messages', username=user.username) }}" class="btn btn-primary w-100 w-sm-auto">
+                                <i class="fas fa-paper-plane me-1"></i>Личное сообщение
+                            </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{{ url_for('login') }}" class="btn btn-primary w-100 w-sm-auto">
+                                <i class="fas fa-sign-in-alt me-1"></i>Войти в чат
+                            </a>
                         {% endif %}
                     </div>
                 </div>
@@ -57,4 +66,69 @@
         </div>
     </div>
 </div>
+
+<!-- Share Profile Popup -->
+<div id="sharePopup" class="share-popup">
+    <div class="share-popup-content">
+        <button id="closeSharePopup" class="share-popup-close">
+            <i class="fas fa-times"></i>
+        </button>
+        <h3 class="share-popup-title">Поделиться профилем</h3>
+        <p>Скопируйте эту ссылку, чтобы поделиться профилем пользователя:</p>
+        <input type="text" id="shareLink" readonly value="{{ url_for('view_user_profile', username=user.username, _external=True) }}">
+        <div class="share-popup-actions">
+            <button id="copyShareLink" class="btn btn-primary">
+                <i class="fas fa-copy me-1"></i>Копировать
+            </button>
+            <button id="closeShareBtn" class="btn btn-secondary">
+                <i class="fas fa-times me-1"></i>Закрыть
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const shareBtn = document.getElementById('shareProfileBtn');
+        const sharePopup = document.getElementById('sharePopup');
+        const closePopupBtn = document.getElementById('closeSharePopup');
+        const closeShareBtn = document.getElementById('closeShareBtn');
+        const copyLinkBtn = document.getElementById('copyShareLink');
+        const shareLinkInput = document.getElementById('shareLink');
+        
+        // Open popup
+        shareBtn.addEventListener('click', function() {
+            sharePopup.classList.add('active');
+        });
+        
+        // Close popup functions
+        function closePopup() {
+            sharePopup.classList.remove('active');
+        }
+        
+        closePopupBtn.addEventListener('click', closePopup);
+        closeShareBtn.addEventListener('click', closePopup);
+        
+        // Close when clicking outside popup content
+        sharePopup.addEventListener('click', function(e) {
+            if (e.target === sharePopup) {
+                closePopup();
+            }
+        });
+        
+        // Copy link to clipboard
+        copyLinkBtn.addEventListener('click', function() {
+            shareLinkInput.select();
+            document.execCommand('copy');
+            
+            // Show feedback
+            copyLinkBtn.innerHTML = '<i class="fas fa-check me-1"></i>Скопировано';
+            setTimeout(function() {
+                copyLinkBtn.innerHTML = '<i class="fas fa-copy me-1"></i>Копировать';
+            }, 1500);
+        });
+    });
+</script>
 {% endblock %} 
