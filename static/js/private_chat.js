@@ -103,6 +103,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // If we're not on the chat page, listen for new messages to show notifications
         socket.on('receive_private_message', function(data) {
             updateMessageNotification();
+            
+            // Emit event for conversations page to update counters in real-time
+            if (data.sender_id) {
+                // Use a delay to ensure event propagation
+                setTimeout(function() {
+                    socket.emit('new_private_message', { sender_id: data.sender_id });
+                }, 100);
+            }
         });
     }
     
@@ -121,7 +129,25 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateMessageNotification() {
         const messagesNavLink = document.querySelector('.nav-link[href*="conversations"]');
         if (messagesNavLink) {
+            // Add animation class
             messagesNavLink.classList.add('has-new-messages');
+            
+            // Find or create the badge
+            let badge = messagesNavLink.querySelector('.badge');
+            if (!badge) {
+                // Create a new badge
+                badge = document.createElement('span');
+                badge.className = 'badge rounded-pill bg-danger ms-1';
+                badge.textContent = '1';
+                messagesNavLink.appendChild(badge);
+            } else {
+                // Increment existing badge
+                let count = parseInt(badge.textContent.replace('+', '')) || 0;
+                count++;
+                
+                // Limit display to "9+" for counts greater than 9
+                badge.textContent = count > 9 ? '9+' : count.toString();
+            }
         }
     }
     

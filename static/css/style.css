@@ -50,6 +50,7 @@ main {
     font-weight: 500;
     padding: 8px 15px;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .nav-link:hover {
@@ -838,42 +839,74 @@ input[type="file"].d-none {
 
 /* Extra small devices */
 @media (max-width: 575.98px) {
-    .avatar-container {
-        width: 100px;
-        height: 100px;
+    .profile-card .card-footer,
+    .profile-edit-card .card-footer {
+        text-align: center;
+        padding: 15px;
     }
     
-    .avatar-overlay i {
-        font-size: 1.2rem;
-        margin-bottom: 3px;
+    .profile-card .avatar-container, 
+    .profile-edit-card .avatar-container {
+        width: 120px;
+        height: 120px;
+        margin-left: auto;
+        margin-right: auto;
     }
     
-    .avatar-overlay span {
-        font-size: 0.8rem;
+    .form-control {
+        font-size: 0.9rem;
+        padding: 10px;
     }
     
-    .profile-card .card-header h2,
-    .profile-edit-card .card-header h2 {
-        font-size: 1.1rem;
-    }
-    
-    .profile-info h5 {
-        font-size: 1rem;
-    }
-    
-    .profile-info .lead {
+    .btn {
+        padding: 8px 16px;
         font-size: 0.9rem;
     }
     
-    .profile-edit-card .d-flex.justify-content-between {
-        flex-direction: column;
-        gap: 10px;
+    /* Smaller input field and send button for chat */
+    .message-form .form-control {
+        font-size: 0.85rem;
+        padding: 8px 10px;
+        height: 38px !important;
+        line-height: 1;
+        min-height: 38px;
     }
     
-    .profile-edit-card .d-flex.justify-content-between a,
-    .profile-edit-card .d-flex.justify-content-between input[type="submit"] {
+    .message-form .btn {
+        padding: 0 12px;
+        height: 38px;
+        min-height: 38px;
+    }
+    
+    .message-form .btn i {
+        font-size: 0.9rem;
+    }
+    
+    /* Message input group smaller height */
+    .message-form .input-group {
+        height: 38px;
+    }
+    
+    /* Create a utility class for button width control */
+    .w-sm-auto {
         width: 100%;
     }
+    
+    @media (min-width: 576px) {
+        .w-sm-auto {
+            width: auto !important;
+        }
+    }
+}
+
+/* Remove the new message indicator styles */
+.new-message-indicator {
+    display: none;
+}
+
+/* Don't hide the conversation preview text */
+.conversation-item.has-new-messages .conversation-preview {
+    display: block;
 }
 
 /* Navbar Avatar */
@@ -977,7 +1010,7 @@ input[type="file"].d-none {
     margin-left: -4px;
 }
 
-/* Notification animation for Message tab */
+/* Notification animation for Message tab - keep icon animation but remove badge animation */
 @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.2); }
@@ -987,6 +1020,33 @@ input[type="file"].d-none {
 .nav-link.has-new-messages i {
     animation: pulse 1s infinite;
     color: var(--primary-color);
+}
+
+/* Navbar notification badge - removed animation */
+.nav-link .badge {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+    vertical-align: text-top;
+    position: relative;
+    z-index: 5;
+    margin-left: 0.25rem !important;
+    display: inline-block;
+}
+
+/* Message counter in conversation preview - removed animation */
+.conversation-preview .message-counter {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+}
+
+.conversation-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: right;
+}
+
+.nav-link {
+    position: relative;
 }
 
 /* Base styles for notification badges */
@@ -1060,12 +1120,6 @@ input[type="file"].d-none {
     max-width: 200px;
 }
 
-.conversation-time {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    text-align: right;
-}
-
 /* Additional responsive styles for profile pages */
 @media (max-width: 991.98px) {
     .container {
@@ -1120,6 +1174,30 @@ input[type="file"].d-none {
     .btn {
         padding: 8px 16px;
         font-size: 0.9rem;
+    }
+    
+    /* Smaller input field and send button for chat */
+    .message-form .form-control {
+        font-size: 0.85rem;
+        padding: 8px 10px;
+        height: 38px !important;
+        line-height: 1;
+        min-height: 38px;
+    }
+    
+    .message-form .btn {
+        padding: 0 12px;
+        height: 38px;
+        min-height: 38px;
+    }
+    
+    .message-form .btn i {
+        font-size: 0.9rem;
+    }
+    
+    /* Message input group smaller height */
+    .message-form .input-group {
+        height: 38px;
     }
     
     /* Create a utility class for button width control */

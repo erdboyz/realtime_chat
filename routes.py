@@ -386,6 +386,14 @@ def configure_routes(app, socketio):
             # Emit to sender and recipient
             emit('receive_private_message', message_data, room=request.sid)
             emit('receive_private_message', message_data, room=f"user_{recipient_id}")
+            
+            # Also emit a new_private_message event to update counters in real-time
+            # Only broadcast to recipient 
+            notification_data = {
+                'sender_id': current_user.id,
+                'recipient_id': recipient_id
+            }
+            emit('new_private_message', notification_data, room=f"user_{recipient_id}")
     
     @socketio.on('mark_message_read')
     def handle_mark_message_read(data):
@@ -406,6 +414,17 @@ def configure_routes(app, socketio):
         # Get all distinct user IDs that are currently connected
         online_user_ids = list(set(connected_users.values()))
         emit('online_users', {'user_ids': online_user_ids})
+    
+    @socketio.on('new_private_message')
+    def handle_new_private_message(data):
+        # Forward the new message notification to all clients
+        if current_user.is_authenticated and 'sender_id' in data:
+            # Ensure we're broadcasting to everyone except the sender
+            sender_id = int(data['sender_id'])
+            emit('new_private_message', data, broadcast=True)
+            
+            # Log for debugging
+            print(f"Broadcasting new_private_message from {sender_id}")
     
     @app.route('/profile')
     @login_required
