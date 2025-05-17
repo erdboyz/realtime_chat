@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from flask_wtf.file import FileField, FileAllowed
-from models import User
+from database import User
 
 # Создаем русские сообщения для валидаторов
 class CustomDataRequired(DataRequired):

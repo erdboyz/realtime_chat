@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, url_for, request, jsonify, abort, current_app, session
 from flask_login import current_user, login_user, logout_user, login_required
-from models import User, Message, PrivateMessage, db
+from database import User, Message, PrivateMessage, db
 from forms import LoginForm, RegistrationForm, ProfileForm
 from flask_socketio import emit, join_room
 from functools import wraps
@@ -10,12 +10,37 @@ import secrets
 from PIL import Image
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_, and_, desc
+import bleach
+import re
+from flask_wtf.csrf import CSRFProtect
+import base64
 
 # Track connected users by their user IDs and session IDs
 connected_users = {}  # Maps session ID to user ID
 
 # Define the time zone offset to apply (MSK is UTC+3)
 TIMEZONE_OFFSET = 3  # hours
+
+# Define allowed HTML tags and attributes for sanitization
+ALLOWED_TAGS = ['b', 'i', 'u', 'a', 'br', 'p', 'code', 'pre', 'em', 'strong', 'span', 'div', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'table', 'tr', 'td', 'th', 'thead', 'tbody']
+ALLOWED_ATTRIBUTES = {
+    'a': ['href', 'title', 'class', 'id', 'target', 'rel'],
+    'img': ['src', 'alt', 'title', 'class', 'id', 'width', 'height'],
+    '*': ['class', 'id', 'style']
+}
+
+# Function to sanitize user input
+def sanitize_input(text):
+    if text is None:
+        return ""
+    # Clean HTML tags and attributes
+    cleaned = bleach.clean(
+        text, 
+        tags=ALLOWED_TAGS, 
+        attributes=ALLOWED_ATTRIBUTES,
+        strip=True
+    )
+    return cleaned
 
 def admin_required(f):
     @wraps(f)
@@ -27,6 +52,13 @@ def admin_required(f):
     return decorated_function
 
 def configure_routes(app, socketio):
+    # Initialize CSRF protection
+    csrf = CSRFProtect(app)
+    
+    # Exempt SocketIO endpoints from CSRF protection
+    @csrf.exempt
+    def socketio_exempt(view_function):
+        return view_function
     
     # Error handlers
     @app.errorhandler(404)
@@ -45,7 +77,13 @@ def configure_routes(app, socketio):
     # Helper function to save avatar files
     def save_avatar(form_avatar):
         random_hex = secrets.token_hex(8)
-        _, f_ext = os.path.splitext(form_avatar.filename)
+        original_filename = secure_filename(form_avatar.filename)  # Sanitize filename
+        _, f_ext = os.path.splitext(original_filename)
+        
+        # Validate file extension to prevent malicious uploads
+        if f_ext.lower() not in ['.jpg', '.jpeg', '.png', '.gif']:
+            raise ValueError("Неподдерживаемый тип файла. Поддерживаются только изображения (.jpg, .jpeg, .png, .gif)")
+            
         avatar_filename = random_hex + f_ext
         avatar_path = os.path.join(app.root_path, 'static/avatars', avatar_filename)
         
@@ -94,13 +132,31 @@ def configure_routes(app, socketio):
         
         form = LoginForm()
         if form.validate_on_submit():
-            user = User.query.filter_by(username=form.username.data).first()
+            # Sanitize username
+            username = sanitize_input(form.username.data)
+            
+            # Rate limiting - would be added here in production
+            # Using a library like Flask-Limiter
+            
+            user = User.query.filter_by(username=username).first()
             if user is None or not user.check_password(form.password.data):
                 flash('Неверное имя пользователя или пароль')
                 return redirect(url_for('login'))
             
+            # Regenerate session to prevent session fixation
+            session.clear()
+            
             login_user(user, remember=form.remember_me.data)
-            return redirect(url_for('chat'))
+            
+            # Set secure session cookie parameters
+            session.permanent = True
+            
+            # Check for 'next' parameter to prevent open redirect
+            next_page = request.args.get('next')
+            if next_page and not next_page.startswith('/'):
+                next_page = None
+                
+            return redirect(next_page or url_for('chat'))
         
         return render_template('login.html', title='Вход', form=form)
     
@@ -119,7 +175,16 @@ def configure_routes(app, socketio):
             # Check if this is the first user to register
             is_first_user = User.query.count() == 0
             
-            user = User(username=form.username.data, email=form.email.data)
+            # Sanitize user inputs
+            username = sanitize_input(form.username.data)
+            email = form.email.data.strip().lower()  # Email doesn't need sanitization, just strip and lowercase
+            
+            # Additional validation (e.g., prevent usernames with dangerous characters)
+            if not re.match(r'^[\w\d\._-]+$', username):
+                flash('Имя пользователя может содержать только буквы, цифры, и символы _ . -')
+                return redirect(url_for('register'))
+            
+            user = User(username=username, email=email)
             user.set_password(form.password.data)
             
             # If this is the first user, make them an admin
@@ -128,6 +193,9 @@ def configure_routes(app, socketio):
             
             db.session.add(user)
             db.session.commit()
+            
+            # Regenerate session to prevent session fixation
+            session.clear()
             
             if is_first_user:
                 flash('Поздравляем! Вы зарегистрированы как администратор.')
@@ -231,6 +299,15 @@ def configure_routes(app, socketio):
                 and_(PrivateMessage.sender_id == other_user.id, PrivateMessage.recipient_id == current_user.id)
             )
         ).order_by(PrivateMessage.timestamp).all()
+        
+        # Decrypt messages for display
+        for message in messages:
+            if message.is_encrypted and message.body.startswith('gAAAAAB'):
+                try:
+                    message.body = message.decrypt_message(message.body)
+                except Exception as e:
+                    print(f"Error decrypting message {message.id}: {str(e)}")
+                    message.body = "[Зашифрованное сообщение]"
         
         # Mark all messages from the other user as read
         unread_messages = PrivateMessage.query.filter(
@@ -338,9 +415,12 @@ def configure_routes(app, socketio):
     @socketio.on('send_message')
     def handle_message(data):
         if current_user.is_authenticated:
+            # Sanitize message input to prevent XSS
+            message_text = sanitize_input(data.get('message', ''))
+            
             # Create message with current time
             now = datetime.now(timezone.utc)
-            message = Message(body=data['message'], author=current_user, timestamp=now)
+            message = Message(body=message_text, author=current_user, timestamp=now)
             db.session.add(message)
             db.session.commit()
             
@@ -351,7 +431,7 @@ def configure_routes(app, socketio):
             # Send formatted time
             emit('receive_message', {
                 'message': message.body,
-                'username': current_user.username,
+                'username': current_user.username,  # Don't sanitize usernames in socket events
                 'display_time': formatted_time,
                 'timestamp': message.timestamp.isoformat(),
                 'avatar': current_user.avatar
@@ -360,58 +440,96 @@ def configure_routes(app, socketio):
     @socketio.on('send_private_message')
     def handle_private_message(data):
         if current_user.is_authenticated and 'message' in data and 'recipient_id' in data:
-            recipient_id = int(data['recipient_id'])
+            # Sanitize input to prevent XSS
+            message_text = sanitize_input(data.get('message', ''))
+            
+            try:
+                recipient_id = int(data['recipient_id'])
+            except (ValueError, TypeError):
+                # Prevent injection attacks with invalid IDs
+                return
+                
             recipient = User.query.get(recipient_id)
             
             if not recipient:
                 return
             
-            # Create and save the message
-            now = datetime.now(timezone.utc)
+            # Create message instance
             message = PrivateMessage(
-                body=data['message'],
                 sender_id=current_user.id,
                 recipient_id=recipient_id,
-                timestamp=now,
-                is_read=False
+                timestamp=datetime.now(timezone.utc),
+                is_read=False,
+                is_encrypted=True
             )
             
-            db.session.add(message)
-            db.session.commit()
-            
-            # Format time for display
-            adjusted_hour = (now.hour + TIMEZONE_OFFSET) % 24
-            formatted_time = f"{adjusted_hour:02d}:{now.minute:02d}"
-            
-            # Prepare message data
-            message_data = {
-                'message_id': message.id,
-                'message': message.body,
-                'sender_id': current_user.id,
-                'recipient_id': recipient_id,
-                'display_time': formatted_time,
-                'timestamp': message.timestamp.isoformat(),
-                'avatar': current_user.avatar,
-                'username': current_user.username,
-                'is_read': False
-            }
-            
-            # Emit to sender and recipient
-            emit('receive_private_message', message_data, room=request.sid)
-            emit('receive_private_message', message_data, room=f"user_{recipient_id}")
-            
-            # Also emit a new_private_message event to update counters in real-time
-            # Only broadcast to recipient 
-            notification_data = {
-                'sender_id': current_user.id,
-                'recipient_id': recipient_id
-            }
-            emit('new_private_message', notification_data, room=f"user_{recipient_id}")
+            # Encrypt the message
+            try:
+                encrypted_text = message.encrypt_message(message_text)
+                message.body = encrypted_text
+                
+                db.session.add(message)
+                db.session.commit()
+                
+                # Format time for display
+                now = datetime.now(timezone.utc)
+                adjusted_hour = (now.hour + TIMEZONE_OFFSET) % 24
+                formatted_time = f"{adjusted_hour:02d}:{now.minute:02d}"
+                
+                # For display, use the original message text for the sender
+                # Recipients will decrypt on their end
+                sender_message_data = {
+                    'message_id': message.id,
+                    'message': message_text,  # Original text for sender
+                    'sender_id': current_user.id,
+                    'recipient_id': recipient_id,
+                    'display_time': formatted_time,
+                    'timestamp': message.timestamp.isoformat(),
+                    'avatar': current_user.avatar,
+                    'username': current_user.username,
+                    'is_read': False,
+                    'is_encrypted': True
+                }
+                
+                # For recipient, send decrypted message too (simpler encryption approach)
+                recipient_message_data = {
+                    'message_id': message.id,
+                    'message': message_text,  # Send plain text for recipient too
+                    'sender_id': current_user.id,
+                    'recipient_id': recipient_id,
+                    'display_time': formatted_time,
+                    'timestamp': message.timestamp.isoformat(),
+                    'avatar': current_user.avatar,
+                    'username': current_user.username,
+                    'is_read': False,
+                    'is_encrypted': True
+                }
+                
+                # Emit to sender
+                emit('receive_private_message', sender_message_data, room=request.sid)
+                
+                # Emit to recipient 
+                emit('receive_private_message', recipient_message_data, room=f"user_{recipient_id}")
+                
+                # Also emit a new_private_message event to update counters in real-time
+                # Only broadcast to recipient 
+                notification_data = {
+                    'sender_id': current_user.id,
+                    'recipient_id': recipient_id
+                }
+                emit('new_private_message', notification_data, room=f"user_{recipient_id}")
+            except Exception as e:
+                print(f"Error encrypting/sending private message: {str(e)}")
+                # Don't emit any events if there was an error
     
     @socketio.on('mark_message_read')
     def handle_mark_message_read(data):
         if current_user.is_authenticated and 'message_id' in data:
-            message = PrivateMessage.query.get(int(data['message_id']))
+            try:
+                message = PrivateMessage.query.get(int(data['message_id']))
+            except (ValueError, TypeError):
+                # Prevent injection attacks with invalid IDs
+                return
             
             if message and message.recipient_id == current_user.id:
                 message.is_read = True
@@ -467,9 +585,9 @@ def configure_routes(app, socketio):
                 # Only show password change notification on the profile page
                 # flash('Пароль успешно изменен', 'success')
             
-            # Update username and email
-            current_user.username = form.username.data
-            current_user.email = form.email.data
+            # Sanitize and update username and email
+            current_user.username = sanitize_input(form.username.data)
+            current_user.email = form.email.data.strip().lower()  # Email doesn't need sanitization
             
             # Handle avatar upload
             if form.avatar.data:

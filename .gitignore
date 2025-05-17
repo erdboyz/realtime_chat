@@ -22,6 +22,7 @@ instance/
 
 # Environment variables
 .env
+.flaskenv
 
 # IDE specific files
 .idea/
@@ -32,6 +33,7 @@ instance/
 # Database
 *.db
 *.sqlite3
+*.sqlite
 
 # Logs
 logs/
@@ -49,4 +51,17 @@ Thumbs.db
 # User uploads
 static/avatars/*
 !static/avatars/.gitkeep
-!static/avatars/default_avatar.png 
+!static/avatars/default_avatar.png
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Flask-Session
+flask_session/
+
+# Backup files
+*.bak
+*.backup
+*~ 

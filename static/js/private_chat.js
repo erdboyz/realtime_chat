@@ -70,6 +70,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Only add message if it's part of this conversation
             if (data.sender_id == recipientId || 
                (data.recipient_id == recipientId && data.sender_id != recipientId)) {
+                
+                // Process the message first if it's encrypted
+                if (window.messageEncryption && window.messageEncryption.isEncrypted(data)) {
+                    data = window.messageEncryption.processReceivedMessage(data);
+                }
+                
                 addMessage(data);
                 
                 // Mark as read if we are the recipient
@@ -178,10 +184,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const messageBubble = document.createElement('div');
         messageBubble.className = 'message-bubble';
         
+        // Format message text with encryption information if enabled
+        const isEncrypted = window.messageEncryption && window.messageEncryption.isEncrypted(data);
+        const messageContent = window.messageEncryption && isEncrypted 
+            ? window.messageEncryption.formatMessage(data.message, isEncrypted)
+            : data.message;
+        
         // Add message text
         const messageText = document.createElement('div');
         messageText.className = 'message-text';
-        messageText.textContent = data.message;
+        messageText.textContent = messageContent;
         messageBubble.appendChild(messageText);
         
         // Create message footer for time and status
@@ -208,16 +220,15 @@ document.addEventListener('DOMContentLoaded', function() {
             messageFooter.appendChild(statusDiv);
         }
         
-        // Add the footer to the bubble
+        // Add encryption indicator if encryption helper is available
+        if (window.messageEncryption) {
+            window.messageEncryption.updateEncryptionStatus(messageElement, isEncrypted);
+        }
+        
         messageBubble.appendChild(messageFooter);
-        
-        // Add the bubble to the content wrapper
         contentWrapper.appendChild(messageBubble);
-        
-        // Add the content wrapper to the message element
         messageElement.appendChild(contentWrapper);
         
-        // Add the message to the container
         messagesContainer.appendChild(messageElement);
     }
     

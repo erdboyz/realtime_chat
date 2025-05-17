@@ -1323,3 +1323,24 @@ input[type="file"].d-none {
 .share-popup-actions button {
     flex: 1;
 }
+
+/* Encryption indicators */
+.encryption-indicator {
+    display: inline-block;
+    margin-left: 5px;
+    color: #6c757d;
+    font-size: 12px;
+}
+
+.message-own .encryption-indicator .fa-lock {
+    color: #28a745;
+}
+
+.message-other .encryption-indicator .fa-lock {
+    color: #17a2b8;
+}
+
+.encryption-indicator .fa-lock-open {
+    color: #dc3545;
+}
+

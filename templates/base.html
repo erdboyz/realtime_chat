@@ -12,6 +12,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    {% if current_user.is_authenticated %}
+    <div id="current-user-data" data-user-id="{{ current_user.id }}" style="display:none;"></div>
+    {% endif %}
+    
     <header>
         <nav class="navbar navbar-expand-lg">
             <div class="container">
