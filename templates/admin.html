@@ -88,6 +88,7 @@
                                 <strong>Внимание:</strong> Очистка чата удалит все сообщения без возможности восстановления.
                             </p>
                             <form action="{{ url_for('clear_chat') }}" method="post">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-danger" onclick="return confirm('Вы уверены, что хотите очистить все сообщения в чате?')">
                                     <i class="fas fa-trash-alt me-1"></i> Очистить чат
                                 </button>
